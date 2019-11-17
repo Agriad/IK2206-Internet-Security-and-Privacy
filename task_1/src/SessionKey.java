@@ -6,6 +6,7 @@ import java.util.Base64;
 public class SessionKey {
     SecretKey secretKey;
 
+    // Makes an AES key with length keyLength
     SessionKey(Integer keylength) throws java.security.NoSuchAlgorithmException
     {
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
@@ -13,6 +14,7 @@ public class SessionKey {
         secretKey = keygen.generateKey();
     }
 
+    // Makes a key from a base64 encoded key
     SessionKey(String encodedkey)
     {
         byte[] keyByte = encodedkey.getBytes();
@@ -20,12 +22,14 @@ public class SessionKey {
         secretKey = new SecretKeySpec(key, 0, key.length, "AES");
     }
 
+    // Returns a key
     SecretKey getSecretKey()
     {
         SecretKey generatedKey = this.secretKey;
         return generatedKey;
     }
 
+    // Returns a key encoded in base64
     String encodeKey()
     {
         byte[] key = secretKey.getEncoded();
@@ -33,6 +37,8 @@ public class SessionKey {
         return encodedKey;
     }
 
+    /*
+    // Testing
     public static void main(String args[]) throws java.security.NoSuchAlgorithmException
     {
         SessionKey key1 = new SessionKey(128);
@@ -44,4 +50,6 @@ public class SessionKey {
             System.out.println("Fail");
         }
     }
+
+    */
 }
