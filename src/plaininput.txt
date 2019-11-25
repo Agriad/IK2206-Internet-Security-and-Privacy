@@ -1,0 +1,3 @@
+plaininput
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris quis vehicula nibh, quis pellentesque elit. Sed enim lectus, gravida id eros ac, convallis consequat purus. Aenean imperdiet metus nunc, a porta nisi molestie vitae. Duis lacus ipsum, dignissim ac vestibulum et, pretium eget dolor. Donec non nibh eget lectus pulvinar eleifend eu ac nibh. Nunc nec quam molestie, placerat magna ac, laoreet elit. Proin dictum tempus enim vel dapibus. Pellentesque sed justo ut risus aliquam dignissim vitae ut dui. Donec nulla est, tempus ut nisl eget, viverra volutpat metus.

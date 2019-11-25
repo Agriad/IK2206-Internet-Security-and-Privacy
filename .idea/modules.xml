@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/IK2206-internet-security-and-privacy.iml" filepath="$PROJECT_DIR$/.idea/IK2206-internet-security-and-privacy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IK2206-internet-security-and-privacy.iml" filepath="$PROJECT_DIR$/IK2206-internet-security-and-privacy.iml" />
     </modules>
   </component>
 </project>
