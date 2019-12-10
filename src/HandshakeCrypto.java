@@ -47,9 +47,6 @@ public class HandshakeCrypto{
         X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(certInputStream);
         PublicKey publicKey = certificate.getPublicKey();
 
-        System.out.println("public key");
-        System.out.println(publicKey.getEncoded());
-
         return publicKey;
     }
 
@@ -58,20 +55,10 @@ public class HandshakeCrypto{
     {
         File keyFile = new File(keyfile);
         byte[] keyByte = Files.readAllBytes(keyFile.toPath());
-        System.out.println("private key");
-        System.out.println(new String(keyByte));
         PKCS8EncodedKeySpec keyPKCS8 = new PKCS8EncodedKeySpec(keyByte);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey privateKey = keyFactory.generatePrivate(keyPKCS8);
 
         return privateKey;
-    }
-
-    public static KeyPair test() throws NoSuchAlgorithmException {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-        kpg.initialize(2048);
-        KeyPair kp = kpg.generateKeyPair();
-
-        return kp;
     }
 }
