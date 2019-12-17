@@ -10,7 +10,7 @@ import java.util.Base64;
 public class SessionDecrypter {
     private Cipher cipher;
 
-    // constructor that takes key and iv to make a cipher for decoding
+    // Constructor that takes key and iv to make a cipher for decoding
     SessionDecrypter(String key, String iv) throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException
     {
@@ -22,10 +22,22 @@ public class SessionDecrypter {
         byte[] initializationVector = Base64.getDecoder().decode(iv);
         IvParameterSpec IV = new IvParameterSpec(initializationVector);
         c.init(Cipher.DECRYPT_MODE, secretKey, IV);
-        cipher = c;
+        this.cipher = c;
     }
 
-    // returns an input stream that decodes the stream using the cipher created by the class constructor
+    SessionDecrypter(byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException
+    {
+        Cipher c = Cipher.getInstance("AES/CTR/NoPadding");
+        SessionKey sessionKey = new SessionKey(new String(key));
+        SecretKey secretKey = sessionKey.getSecretKey();
+        byte[] initializationVector = Base64.getDecoder().decode(iv);
+        IvParameterSpec IV = new IvParameterSpec(initializationVector);
+        c.init(Cipher.DECRYPT_MODE, secretKey, IV);
+        this.cipher = c;
+    }
+
+    // Returns an input stream that decodes the stream using the cipher created by the class constructor
     CipherInputStream openCipherInputStream(InputStream input)
     {
         CipherInputStream theCipherInputStream = new CipherInputStream(input, cipher);

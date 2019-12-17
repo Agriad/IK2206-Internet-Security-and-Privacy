@@ -1,6 +1,7 @@
 import javax.security.auth.x500.X500Principal;
 import java.io.*;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -41,6 +42,7 @@ public class VerifyCertificate {
         {
             System.out.println("Fail");
             System.out.println(e);
+            throw new CertificateException("The certificate is not valid");
         }
 
     }

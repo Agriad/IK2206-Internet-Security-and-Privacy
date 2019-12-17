@@ -13,7 +13,7 @@ public class SessionEncrypter {
     private Cipher cipher;
     private SessionKey sessionKey;
 
-    // constructor for creating a secretKey, initializationVector, and cipher for encoding
+    // Constructor for creating a secretKey, initializationVector, and cipher for encoding
     SessionEncrypter(Integer keylength) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException
     {
@@ -22,16 +22,30 @@ public class SessionEncrypter {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         //keyGen.init(keylength);
         //secretKey = keyGen.generateKey();
-        sessionKey = new SessionKey(keylength);
-        secretKey = sessionKey.getSecretKey();
-        initializationVector = new byte[keylength / 8];
+        this.sessionKey = new SessionKey(keylength);
+        this.secretKey = sessionKey.getSecretKey();
+        this.initializationVector = new byte[keylength / 8];
         secureRandom.nextBytes(initializationVector);
         IvParameterSpec IV = new IvParameterSpec(initializationVector);
         c.init(Cipher.ENCRYPT_MODE, secretKey, IV);
-        cipher = c;
+        this.cipher = c;
     }
 
-    // return base64 encoded key
+    // Constructor using key encoded in base64 and iv encoded in base64
+    SessionEncrypter(byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException
+    {
+        Cipher c = Cipher.getInstance("AES/CTR/NoPadding");
+        this.sessionKey = new SessionKey(new String(key));
+        this.secretKey = sessionKey.getSecretKey();
+        byte[] initializationVector = Base64.getDecoder().decode(iv);
+        this.initializationVector = initializationVector;
+        IvParameterSpec IV = new IvParameterSpec(initializationVector);
+        c.init(Cipher.ENCRYPT_MODE, secretKey, IV);
+        this.cipher = c;
+    }
+
+    // Return base64 encoded key
     String encodeKey()
     {
         //byte[] key = secretKey.getEncoded();
@@ -40,14 +54,26 @@ public class SessionEncrypter {
         return encodedKey;
     }
 
-    // returns base64 encoded initialization vector
+    // Returns base64 encoded initialization vector
     String encodeIV()
     {
         String encodedIV = Base64.getEncoder().encodeToString(initializationVector);
         return encodedIV;
     }
 
-    // returns an output stream that encodes the stream using the cipher created by the class constructor
+    // Returns byte array session key
+    byte[] getKeyBytes()
+    {
+        return this.secretKey.getEncoded();
+    }
+
+    // Returns byte array initialization vector
+    byte[] getIVBytes()
+    {
+        return this.initializationVector;
+    }
+
+    // Returns an output stream that encodes the stream using the cipher created by the class constructor
     CipherOutputStream openCipherOutputStream(OutputStream output)
     {
         CipherOutputStream theCipherOuputStream = new CipherOutputStream(output, cipher);
