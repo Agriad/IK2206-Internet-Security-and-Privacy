@@ -21,6 +21,7 @@ public class HandshakeCrypto{
         byte[] cipherText;
         // does not actually use ECB acts like NONE but NONE does not work
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        //Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, key);
         cipherText = cipher.doFinal(plaintext);
 
@@ -33,6 +34,7 @@ public class HandshakeCrypto{
         byte[] plainText;
         // does not actually use ECB acts like NONE but NONE does not work
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        //Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, key);
         plainText = cipher.doFinal(ciphertext);
 
@@ -60,5 +62,27 @@ public class HandshakeCrypto{
         PrivateKey privateKey = keyFactory.generatePrivate(keyPKCS8);
 
         return privateKey;
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException,
+            CertificateException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException,
+            NoSuchPaddingException {
+        String clientPrivatePath = "/Users/Justin/Desktop/Games/Programming/Github/" +
+                "IK2206-internet-security-and-privacy/src/client-private.der";
+        String publicKeyPath = "/Users/Justin/Desktop/Games/Programming/Github/" +
+                "IK2206-internet-security-and-privacy/src/client.pem";
+        String testPublicKeyPath = "/Users/Justin/Desktop/Games/Programming/Github/" +
+                "IK2206-internet-security-and-privacy/src/current-connection-client.pem";
+
+        PrivateKey privateKey = getPrivateKeyFromKeyFile(clientPrivatePath);
+        PublicKey publicKey = getPublicKeyFromCertFile(publicKeyPath);
+        PublicKey testPublicKey = getPublicKeyFromCertFile(testPublicKeyPath);
+        byte[] publicKeyByte = publicKey.getEncoded();
+        byte[] testPublicKeyByte = testPublicKey.getEncoded();
+
+        System.out.println("public key length: " + publicKeyByte.length);
+        System.out.println(new String(publicKeyByte));
+        System.out.println("test public key length: " + testPublicKeyByte.length);
+        System.out.println(new String(testPublicKeyByte));
     }
 }

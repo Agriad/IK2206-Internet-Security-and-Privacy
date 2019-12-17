@@ -22,16 +22,13 @@ import java.lang.Integer;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
+import java.util.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Base64;
-import java.util.Properties;
-import java.util.StringTokenizer;
- 
+
 public class ForwardServer
 {
     private static final boolean ENABLE_LOGGING = true;
@@ -48,7 +45,7 @@ public class ForwardServer
     private String targetHost;
     private int targetPort;
 
-    private String clientCertificatePath = "./curent-connection-client.pem";
+    private String clientCertificatePath = "./current-connection-client.pem";
     private byte[] sessionKey;
     private byte[] sessionIV;
 
@@ -108,7 +105,8 @@ public class ForwardServer
         String portNumberString = forward.getParameter("TargetPort");
         int portNumberInt = Integer.parseInt(portNumberString);
 
-        targetHost = forward.getParameter("Targethost");
+
+        targetHost = forward.getParameter("TargetHost");
         targetPort = portNumberInt;
     }
 
@@ -124,8 +122,19 @@ public class ForwardServer
         String clientPublicKeyPath = this.clientCertificatePath;
         PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientPublicKeyPath);
 
+        System.out.println("SessionKey length: " + sessionKey.length + " value: " +
+                new String(sessionKey));
+        System.out.println("SessionIV length: " + sessionIV.length + " value: " +
+                new String(sessionIV));
+
+        /*System.out.println("SessionKey length: " + sessionKey.length);
+        System.out.println("SessionIV length: " + sessionIV.length);*/
+
         byte[] encryptedSessionKey = HandshakeCrypto.encrypt(sessionKey, clientPublicKey);
         byte[] encryptedSessionIV = HandshakeCrypto.encrypt(sessionIV, clientPublicKey);
+
+        /*System.out.println("encryptedSessionKey length: " + encryptedSessionKey.length);
+        System.out.println("encryptedSessionIV length: " + encryptedSessionIV.length);*/
 
         System.out.println("encryptedSessionKey length: " + encryptedSessionKey.length + " value: " +
                 new String(encryptedSessionKey));
@@ -139,6 +148,9 @@ public class ForwardServer
                 new String(encodedSessionKey));
         System.out.println("encodedSessionIV length: " + encodedSessionIV.length + " value: " +
                 new String(encodedSessionIV));
+
+        /*System.out.println("encodedSessionKey length: " + encodedSessionKey.length);
+        System.out.println("encodedSessionIV length: " + encodedSessionIV.length);*/
 
         String finalSessionKey = new String(encodedSessionKey);
         String finalSessionIV = new String(encodedSessionIV);

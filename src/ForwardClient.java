@@ -32,7 +32,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.stream.Stream;
 
 public class ForwardClient
 {
@@ -85,7 +87,7 @@ public class ForwardClient
         }
 
         byte[] serverCertificateByte = Base64.getDecoder().decode(certificate);
-        String serverCertificatePath = "./curent-connection-server.pem";
+        String serverCertificatePath = "./current-connection-server.pem";
         File serverCertificateFile = new File(serverCertificatePath);
         FileOutputStream serverFileOutputStream = new FileOutputStream(serverCertificateFile);
         serverFileOutputStream.write(serverCertificateByte);
@@ -99,6 +101,8 @@ public class ForwardClient
 
         VerifyCertificate.main(verifyCertificateInput);
     }
+
+
 
     // Adds the key value pair for forward message
     private static void forwardMessage(HandshakeMessage forwardMessage, Socket socket) throws IOException {
@@ -128,6 +132,9 @@ public class ForwardClient
         System.out.println("encodedSessionKey length: " + encodedSessionKey.length() + " value: " + encodedSessionKey);
         System.out.println("encodedSessionIV length: " + encodedSessionIV.length() + " value: " + encodedSessionIV);
 
+        /*System.out.println("encodedSessionKey length: " + encodedSessionKey.length());
+        System.out.println("encodedSessionIV length: " + encodedSessionIV.length());*/
+
         byte[] decodedSessionKey = Base64.getDecoder().decode(encodedSessionKey);
         byte[] decodedSessionIV = Base64.getDecoder().decode(encodedSessionIV);
 
@@ -137,13 +144,44 @@ public class ForwardClient
         System.out.println("decodedSessionKey length: " + decodedSessionKey.length + " value: " +
                 new String(decodedSessionKey));
         System.out.println("decodedSessionIV length: " + decodedSessionIV.length + " value: " +
-                new String(encodedSessionIV));
+                new String(decodedSessionIV));
+
+        /*System.out.println("decodedSessionKey length: " + decodedSessionKey.length);
+        System.out.println("decodedSessionIV length: " + decodedSessionIV.length);*/
+
+        /*
+        byte[] decodedSessionkey1 = Arrays.copyOfRange(decodedSessionKey, 0, decodedSessionKey.length / 2);
+        byte[] decodedSessionkey2 = Arrays.copyOfRange(decodedSessionKey, decodedSessionKey.length / 2,
+                decodedSessionKey.length);
+
+        byte[] decryptedSessionKey1 = HandshakeCrypto.decrypt(decodedSessionkey1, userPrivateKey);
+        byte[] decryptedSessionKey2 = HandshakeCrypto.decrypt(decodedSessionkey2, userPrivateKey);
+        byte[] decryptedSessionKey = Arrays.copyOf(decryptedSessionKey1,
+                decryptedSessionKey1.length + decryptedSessionKey2.length);
+        System.arraycopy(decryptedSessionKey2, 0, decodedSessionKey, decodedSessionkey1.length,
+                decryptedSessionKey2.length);
+
+         */
 
         byte[] decryptedSessionKey = HandshakeCrypto.decrypt(decodedSessionKey, userPrivateKey);
         byte[] decryptedSessionIV = HandshakeCrypto.decrypt(decodedSessionIV, userPrivateKey);
 
         serverHost = sessionHost;
-        serverPort = Integer.getInteger(sessionPort);
+        serverPort = Integer.parseInt(sessionPort);
+
+        /*System.out.println("sessionKey length: " + decryptedSessionKey.length + " value: " +
+                new String(decryptedSessionKey));
+        System.out.println("sessionIV length: " + decryptedSessionIV.length + " value: " +
+                new String(decryptedSessionIV));*/
+
+
+        /*System.out.println("sessionKey length: " + decryptedSessionKey.length);
+        System.out.println("sessionIV length: " + decryptedSessionIV.length);*/
+
+        System.out.println("sessionKey length: " + decryptedSessionKey.length);
+        System.out.println(" value: " + new String(decryptedSessionKey));
+        System.out.println("sessionIV length: " + decryptedSessionIV.length);
+        System.out.println(" value: " + new String(decryptedSessionIV));
 
         sessionKey = decryptedSessionKey;
         sessionIV = decryptedSessionIV;

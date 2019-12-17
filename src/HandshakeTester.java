@@ -1,11 +1,32 @@
 import java.security.*;
 public class HandshakeTester {
+    /*
     static String PRIVATEKEYFILE =
             "/Users/Justin/Desktop/Games/Programming/Github/" +
                     "IK2206-internet-security-and-privacy/src/ca-private-pkcs8.der";
     static String CERTFILE =
             "/Users/Justin/Desktop/Games/Programming/Github/IK2206-internet-security-and-privacy/src/CA.pem";
+
+     */
+
+    /*
+    static String PRIVATEKEYFILE =
+            "/Users/Justin/Desktop/Games/Programming/Github/" +
+                    "IK2206-internet-security-and-privacy/src/ca-private-key.der";
+    static String CERTFILE =
+            "/Users/Justin/Desktop/Games/Programming/Github/IK2206-internet-security-and-privacy/src/ca.pem";
+
+     */
+
+    static String PRIVATEKEYFILE =
+            "/Users/Justin/Desktop/Games/Programming/Github/" +
+                    "IK2206-internet-security-and-privacy/src/client-private.der";
+    static String CERTFILE =
+            "/Users/Justin/Desktop/Games/Programming/Github/IK2206-internet-security-and-privacy/src/client.pem";
+
+
     static String PLAINTEXT = "Time flies like an arrow. Fruit flies like a banana.";
+    //static String PLAINTEXT = "Time";
     static String ENCODING = "UTF-8"; /* For converting between strings and byte arrays */
     static public void main(String[] args) throws Exception {
         /* Extract key pair */
