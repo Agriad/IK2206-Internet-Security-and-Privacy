@@ -222,8 +222,6 @@ public class ForwardServer
          * (This may give "Address already in use" errors, but that's OK for now.)
          */
 
-        // CHANGE TO DYNAMIC
-
         listenSocket = new ServerSocket();
         listenSocket.bind(new InetSocketAddress(Handshake.serverHost, Handshake.serverPort));
 

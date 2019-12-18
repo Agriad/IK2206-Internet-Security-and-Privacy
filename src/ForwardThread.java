@@ -5,6 +5,8 @@
  * is stopped and the parent thread is notified to close all its connections.
  */
  
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,9 +41,12 @@ private static final int READ_BUFFER_SIZE = 8192;
         byte[] buffer = new byte[READ_BUFFER_SIZE];
         try {
             while (true) {
-                int bytesRead = mInputStream.read(buffer);
+                int bytesRead;
+                bytesRead = mInputStream.read(buffer);
+
                 if (bytesRead == -1)
                     break; // End of stream is reached --> exit the thread
+
                 mOutputStream.write(buffer, 0, bytesRead);
             }
         } catch (IOException e) {
