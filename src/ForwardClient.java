@@ -50,19 +50,6 @@ public class ForwardClient
     private static byte[] sessionKey;
     private static byte[] sessionIV;
 
-    // REMOVE BELOW
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-    // REMOVE ABOVE
-
     // Creates a HandshakeMessage and returns it filled
     private static HandshakeMessage clientServerHello() throws IOException {
         HandshakeMessage clientHello = new HandshakeMessage();
@@ -154,9 +141,6 @@ public class ForwardClient
         String userPrivateKeyPath = "./" + arguments.getProperty("key");
         PrivateKey userPrivateKey = HandshakeCrypto.getPrivateKeyFromKeyFile(userPrivateKeyPath);
 
-        System.out.println("user private key length: " + userPrivateKey.getAlgorithm().length());
-        System.out.println(new String(userPrivateKey.getEncoded()));
-
         System.out.println("decodedSessionKey length: " + decodedSessionKey.length + " value: " +
                 new String(decodedSessionKey));
         System.out.println("decodedSessionIV length: " + decodedSessionIV.length + " value: " +
@@ -198,11 +182,6 @@ public class ForwardClient
         System.out.println(" value: " + new String(decryptedSessionKey));
         System.out.println("sessionIV length: " + decryptedSessionIV.length);
         System.out.println(" value: " + new String(decryptedSessionIV));
-
-        System.out.println("sessionKey hex val: ");
-        System.out.println(bytesToHex(decodedSessionKey));
-        System.out.println("sessionIV hex val: ");
-        System.out.println(bytesToHex(decryptedSessionIV));
 
         sessionKey = decryptedSessionKey;
         sessionIV = decryptedSessionIV;

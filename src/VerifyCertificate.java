@@ -32,8 +32,7 @@ public class VerifyCertificate {
         try{
             caCert.verify(caPublicKey);
             userCert.verify(caPublicKey);
-            // This is wrong
-            //userCert.verify(userPublicKey);
+            userCert.verify(userPublicKey);
             caCert.checkValidity();
             userCert.checkValidity();
 
@@ -43,7 +42,6 @@ public class VerifyCertificate {
         {
             System.out.println("Fail");
             System.out.println(e);
-            //e.printStackTrace();
             throw new CertificateException("The certificate is not valid");
         }
 

@@ -49,19 +49,6 @@ public class ForwardServer
     private byte[] sessionKey;
     private byte[] sessionIV;
 
-    // REMOVE BELOW
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-    // REMOVE ABOVE
-
     // validate the client certificate
     private void clientCheck(HandshakeMessage clientHello, Socket socket) throws IOException,
             CertificateException {
@@ -135,22 +122,10 @@ public class ForwardServer
         String clientPublicKeyPath = this.clientCertificatePath;
         PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientPublicKeyPath);
 
-        System.out.println("client public key length: " + clientPublicKey.getAlgorithm().length());
-        System.out.println(new String(clientPublicKey.getEncoded()));
-        System.out.println("server public key length: " + arguments.get(""));
-        System.out.println();
-        System.out.println();
-        System.out.println();
-
         System.out.println("SessionKey length: " + sessionKey.length + " value: " +
                 new String(sessionKey));
         System.out.println("SessionIV length: " + sessionIV.length + " value: " +
                 new String(sessionIV));
-
-        System.out.println("sessionKey hex val: ");
-        System.out.println(bytesToHex(sessionKey));
-        System.out.println("sessionIV hex val: ");
-        System.out.println(bytesToHex(sessionIV));
 
         /*System.out.println("SessionKey length: " + sessionKey.length);
         System.out.println("SessionIV length: " + sessionIV.length);*/
