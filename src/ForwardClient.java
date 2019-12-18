@@ -50,18 +50,6 @@ public class ForwardClient
     private static byte[] sessionKey;
     private static byte[] sessionIV;
 
-    // REMOVE BELOW
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-    // REMOVE ABOVE
 
     // Creates a HandshakeMessage and returns it filled
     private static HandshakeMessage clientServerHello() throws IOException {
@@ -142,67 +130,17 @@ public class ForwardClient
         String sessionHost = session.getParameter("SessionHost");
         String sessionPort = session.getParameter("SessionPort");
 
-        System.out.println("encodedSessionKey length: " + encodedSessionKey.length() + " value: " + encodedSessionKey);
-        System.out.println("encodedSessionIV length: " + encodedSessionIV.length() + " value: " + encodedSessionIV);
-
-        /*System.out.println("encodedSessionKey length: " + encodedSessionKey.length());
-        System.out.println("encodedSessionIV length: " + encodedSessionIV.length());*/
-
         byte[] decodedSessionKey = Base64.getDecoder().decode(encodedSessionKey);
         byte[] decodedSessionIV = Base64.getDecoder().decode(encodedSessionIV);
 
         String userPrivateKeyPath = "./" + arguments.getProperty("key");
         PrivateKey userPrivateKey = HandshakeCrypto.getPrivateKeyFromKeyFile(userPrivateKeyPath);
 
-        System.out.println("user private key length: " + userPrivateKey.getAlgorithm().length());
-        System.out.println(new String(userPrivateKey.getEncoded()));
-
-        System.out.println("decodedSessionKey length: " + decodedSessionKey.length + " value: " +
-                new String(decodedSessionKey));
-        System.out.println("decodedSessionIV length: " + decodedSessionIV.length + " value: " +
-                new String(decodedSessionIV));
-
-        /*System.out.println("decodedSessionKey length: " + decodedSessionKey.length);
-        System.out.println("decodedSessionIV length: " + decodedSessionIV.length);*/
-
-        /*
-        byte[] decodedSessionkey1 = Arrays.copyOfRange(decodedSessionKey, 0, decodedSessionKey.length / 2);
-        byte[] decodedSessionkey2 = Arrays.copyOfRange(decodedSessionKey, decodedSessionKey.length / 2,
-                decodedSessionKey.length);
-
-        byte[] decryptedSessionKey1 = HandshakeCrypto.decrypt(decodedSessionkey1, userPrivateKey);
-        byte[] decryptedSessionKey2 = HandshakeCrypto.decrypt(decodedSessionkey2, userPrivateKey);
-        byte[] decryptedSessionKey = Arrays.copyOf(decryptedSessionKey1,
-                decryptedSessionKey1.length + decryptedSessionKey2.length);
-        System.arraycopy(decryptedSessionKey2, 0, decodedSessionKey, decodedSessionkey1.length,
-                decryptedSessionKey2.length);
-
-         */
-
         byte[] decryptedSessionKey = HandshakeCrypto.decrypt(decodedSessionKey, userPrivateKey);
         byte[] decryptedSessionIV = HandshakeCrypto.decrypt(decodedSessionIV, userPrivateKey);
 
         serverHost = sessionHost;
         serverPort = Integer.parseInt(sessionPort);
-
-        /*System.out.println("sessionKey length: " + decryptedSessionKey.length + " value: " +
-                new String(decryptedSessionKey));
-        System.out.println("sessionIV length: " + decryptedSessionIV.length + " value: " +
-                new String(decryptedSessionIV));*/
-
-
-        /*System.out.println("sessionKey length: " + decryptedSessionKey.length);
-        System.out.println("sessionIV length: " + decryptedSessionIV.length);*/
-
-        System.out.println("sessionKey length: " + decryptedSessionKey.length);
-        System.out.println(" value: " + new String(decryptedSessionKey));
-        System.out.println("sessionIV length: " + decryptedSessionIV.length);
-        System.out.println(" value: " + new String(decryptedSessionIV));
-
-        System.out.println("sessionKey hex val: ");
-        System.out.println(bytesToHex(decodedSessionKey));
-        System.out.println("sessionIV hex val: ");
-        System.out.println(bytesToHex(decryptedSessionIV));
 
         sessionKey = decryptedSessionKey;
         sessionIV = decryptedSessionIV;

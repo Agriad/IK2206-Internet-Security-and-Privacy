@@ -49,22 +49,8 @@ public class ForwardServer
     private byte[] sessionKey;
     private byte[] sessionIV;
 
-    // REMOVE BELOW
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-    // REMOVE ABOVE
-
     // validate the client certificate
-    private void clientCheck(HandshakeMessage clientHello, Socket socket) throws IOException,
-            CertificateException {
+    private void clientCheck(HandshakeMessage clientHello, Socket socket) throws IOException {
         clientHello.recv(socket);
         String messageType = clientHello.getParameter("MessageType");
         String certificate = clientHello.getParameter("Certificate");
@@ -87,7 +73,14 @@ public class ForwardServer
 
         String[] verifyCertificateInput = {caCertificatePath, clientCertificatePath};
 
-        VerifyCertificate.main(verifyCertificateInput);
+        try {
+            VerifyCertificate.main(verifyCertificateInput);
+        }
+        catch (CertificateException certificateException)
+        {
+            System.out.println(certificateException.getMessage());
+
+        }
     }
 
     private void serverHello(HandshakeMessage serverHello, Socket socket) throws IOException {
@@ -118,12 +111,11 @@ public class ForwardServer
         String portNumberString = forward.getParameter("TargetPort");
         int portNumberInt = Integer.parseInt(portNumberString);
 
-
         targetHost = forward.getParameter("TargetHost");
         targetPort = portNumberInt;
     }
 
-    private void sessionMessage(HandshakeMessage session, Socket socket) throws InvalidKeyException,
+    private void sessionMessage(HandshakeMessage session, Socket socket, int sessionPort) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
             IOException, CertificateException, BadPaddingException, IllegalBlockSizeException {
         session.putParameter("MessageType", "Session");
@@ -135,47 +127,11 @@ public class ForwardServer
         String clientPublicKeyPath = this.clientCertificatePath;
         PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientPublicKeyPath);
 
-        System.out.println("client public key length: " + clientPublicKey.getAlgorithm().length());
-        System.out.println(new String(clientPublicKey.getEncoded()));
-        System.out.println("server public key length: " + arguments.get(""));
-        System.out.println();
-        System.out.println();
-        System.out.println();
-
-        System.out.println("SessionKey length: " + sessionKey.length + " value: " +
-                new String(sessionKey));
-        System.out.println("SessionIV length: " + sessionIV.length + " value: " +
-                new String(sessionIV));
-
-        System.out.println("sessionKey hex val: ");
-        System.out.println(bytesToHex(sessionKey));
-        System.out.println("sessionIV hex val: ");
-        System.out.println(bytesToHex(sessionIV));
-
-        /*System.out.println("SessionKey length: " + sessionKey.length);
-        System.out.println("SessionIV length: " + sessionIV.length);*/
-
         byte[] encryptedSessionKey = HandshakeCrypto.encrypt(sessionKey, clientPublicKey);
         byte[] encryptedSessionIV = HandshakeCrypto.encrypt(sessionIV, clientPublicKey);
 
-        /*System.out.println("encryptedSessionKey length: " + encryptedSessionKey.length);
-        System.out.println("encryptedSessionIV length: " + encryptedSessionIV.length);*/
-
-        System.out.println("encryptedSessionKey length: " + encryptedSessionKey.length + " value: " +
-                new String(encryptedSessionKey));
-        System.out.println("encryptedSessionIV length: " + encryptedSessionIV.length + " value: " +
-                new String(encryptedSessionIV));
-
         byte[] encodedSessionKey = Base64.getEncoder().encode(encryptedSessionKey);
         byte[] encodedSessionIV = Base64.getEncoder().encode(encryptedSessionIV);
-
-        System.out.println("encodedSessionKey length: " + encodedSessionKey.length + " value: " +
-                new String(encodedSessionKey));
-        System.out.println("encodedSessionIV length: " + encodedSessionIV.length + " value: " +
-                new String(encodedSessionIV));
-
-        /*System.out.println("encodedSessionKey length: " + encodedSessionKey.length);
-        System.out.println("encodedSessionIV length: " + encodedSessionIV.length);*/
 
         String finalSessionKey = new String(encodedSessionKey);
         String finalSessionIV = new String(encodedSessionIV);
@@ -183,7 +139,8 @@ public class ForwardServer
         session.putParameter("SessionKey", finalSessionKey);
         session.putParameter("SessionIV", finalSessionIV);
         session.putParameter("SessionHost", Handshake.serverHost);
-        session.putParameter("SessionPort", String.valueOf(Handshake.serverPort));
+        //session.putParameter("SessionPort", String.valueOf(Handshake.serverPort));
+        session.putParameter("SessionPort", String.valueOf(sessionPort));
 
         session.send(socket);
     }
@@ -206,7 +163,10 @@ public class ForwardServer
 
         forwardMessage(serverClientHello, clientSocket);
 
-        sessionMessage(serverClientHello, clientSocket);
+        int sessionPort = new ServerSocket(0).getLocalPort();
+        System.out.println("Session port: " + sessionPort);
+
+        sessionMessage(serverClientHello, clientSocket, sessionPort);
         
         clientSocket.close();
 
@@ -222,8 +182,11 @@ public class ForwardServer
          * (This may give "Address already in use" errors, but that's OK for now.)
          */
 
+        // Make dynamic
+
         listenSocket = new ServerSocket();
-        listenSocket.bind(new InetSocketAddress(Handshake.serverHost, Handshake.serverPort));
+        //listenSocket.bind(new InetSocketAddress(Handshake.serverHost, Handshake.serverPort));
+        listenSocket.bind(new InetSocketAddress(Handshake.serverHost, sessionPort));
 
         /* The final destination. The ForwardServer sets up port forwarding
          * between the listensocket (ie., ServerHost/ServerPort) and the target.
