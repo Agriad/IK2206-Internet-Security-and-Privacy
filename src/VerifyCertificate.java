@@ -7,14 +7,14 @@ import java.security.cert.X509Certificate;
 
 
 public class VerifyCertificate {
-    public static void main(String[] args) throws
+    public static void verifyCertificate(InputStream caInStream, InputStream userInStream) throws
             java.security.cert.CertificateException, java.io.IOException
     {
-        File caFile = new File(args[0]);
-        File userFile = new File(args[1]);
+        /*File caFile = new File(args[0]);
+        File userFile = new File(args[1]);*/
 
-        InputStream caInStream = new FileInputStream(caFile);
-        InputStream userInStream = new FileInputStream(userFile);
+        /*InputStream caInStream = new FileInputStream(caFile);
+        InputStream userInStream = new FileInputStream(userFile);*/
 
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate caCert = (X509Certificate) cf.generateCertificate(caInStream);

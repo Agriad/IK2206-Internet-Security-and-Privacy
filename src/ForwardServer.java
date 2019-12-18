@@ -45,9 +45,9 @@ public class ForwardServer
     private String targetHost;
     private int targetPort;
 
-    private String clientCertificatePath = "./current-connection-client.pem";
-    private byte[] sessionKey;
-    private byte[] sessionIV;
+    private static final String clientCertificatePath = "./current-connection-client.pem";
+    /*private byte[] sessionKey;
+    private byte[] sessionIV;*/
 
     // validate the client certificate
     private void clientCheck(HandshakeMessage clientHello, Socket socket) throws IOException {
@@ -61,20 +61,25 @@ public class ForwardServer
         }
 
         byte[] clientCertificateByte = Base64.getDecoder().decode(certificate);
-        String clientCertificatePath = this.clientCertificatePath;
-        File clientCertificateFile = new File(clientCertificatePath);
+        /*File clientCertificateFile = new File(clientCertificatePath);
         FileOutputStream clientFileOutputStream = new FileOutputStream(clientCertificateFile);
         clientFileOutputStream.write(clientCertificateByte);
         clientFileOutputStream.flush();
         clientFileOutputStream.close();
+        */
 
-        String caCertificatePath = "./" + arguments.get("cacert");
+        String caCertificatePath = "." + File.separator + arguments.get("cacert");
         File caCertificateFile = new File(caCertificatePath);
 
-        String[] verifyCertificateInput = {caCertificatePath, clientCertificatePath};
+        /*
+        String[] verifyCertificateInput = {caCertificatePath, clientCertificatePath};*/
+
+        InputStream clientCertificateInputStream = new ByteArrayInputStream(clientCertificateByte);
+        InputStream caCertificateInputStream = new FileInputStream(caCertificateFile);
 
         try {
-            VerifyCertificate.main(verifyCertificateInput);
+            //VerifyCertificate.main(verifyCertificateInput);
+            VerifyCertificate.verifyCertificate(caCertificateInputStream, clientCertificateInputStream);
         }
         catch (CertificateException certificateException)
         {
@@ -85,7 +90,7 @@ public class ForwardServer
 
     private void serverHello(HandshakeMessage serverHello, Socket socket) throws IOException {
         serverHello.putParameter("MessageType", "ServerHello");
-        String userCertificatePath = "./" + arguments.get("usercert");
+        String userCertificatePath = "." + File.separator + arguments.get("usercert");
 
         File userCertificateFile = new File(userCertificatePath);
         InputStream userCertificateInputStream = new FileInputStream(userCertificateFile);
@@ -115,17 +120,18 @@ public class ForwardServer
         targetPort = portNumberInt;
     }
 
-    private void sessionMessage(HandshakeMessage session, Socket socket, int sessionPort) throws InvalidKeyException,
+    private byte[][] sessionMessage(HandshakeMessage session, Socket socket, int sessionPort) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
             IOException, CertificateException, BadPaddingException, IllegalBlockSizeException {
         session.putParameter("MessageType", "Session");
 
         SessionEncrypter sessionEncrypter = new SessionEncrypter(128);
-        sessionKey = sessionEncrypter.getKeyBytes();
-        sessionIV = sessionEncrypter.getIVBytes();
+        /*sessionKey = sessionEncrypter.getKeyBytes();
+        sessionIV = sessionEncrypter.getIVBytes();*/
+        byte[] sessionKey = sessionEncrypter.getKeyBytes();
+        byte[] sessionIV = sessionEncrypter.getIVBytes();
 
-        String clientPublicKeyPath = this.clientCertificatePath;
-        PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientPublicKeyPath);
+        PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientCertificatePath);
 
         byte[] encryptedSessionKey = HandshakeCrypto.encrypt(sessionKey, clientPublicKey);
         byte[] encryptedSessionIV = HandshakeCrypto.encrypt(sessionIV, clientPublicKey);
@@ -143,13 +149,17 @@ public class ForwardServer
         session.putParameter("SessionPort", String.valueOf(sessionPort));
 
         session.send(socket);
+
+        byte[][] sessionData = {sessionKey, sessionIV};
+
+        return sessionData;
     }
 
     /**
      * Do handshake negotiation with client to authenticate, learn 
      * target host/port, etc.
      */
-    private void doHandshake() throws UnknownHostException, IOException, Exception {
+    private byte[][] doHandshake() throws UnknownHostException, IOException, Exception {
 
         Socket clientSocket = handshakeSocket.accept();
         String clientHostPort = clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort();
@@ -164,9 +174,8 @@ public class ForwardServer
         forwardMessage(serverClientHello, clientSocket);
 
         int sessionPort = new ServerSocket(0).getLocalPort();
-        System.out.println("Session port: " + sessionPort);
 
-        sessionMessage(serverClientHello, clientSocket, sessionPort);
+        byte[][] sessionData = sessionMessage(serverClientHello, clientSocket, sessionPort);
         
         clientSocket.close();
 
@@ -195,6 +204,7 @@ public class ForwardServer
         targetHost = Handshake.targetHost;
         targetPort = Handshake.targetPort;
          */
+        return sessionData;
     }
 
     /**
@@ -219,7 +229,10 @@ public class ForwardServer
         while(true) {
             ForwardServerClientThread forwardThread;
             
-            doHandshake();
+            byte[][] sessionData = doHandshake();
+
+            byte[] sessionKey = sessionData[0];
+            byte[] sessionIV = sessionData[1];
 
             SessionEncrypter sessionEncrypter = new SessionEncrypter(Base64.getEncoder().encode(sessionKey),
                     Base64.getEncoder().encode(sessionIV));

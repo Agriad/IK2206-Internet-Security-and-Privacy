@@ -62,7 +62,7 @@ public class ForwardClient
         // File userCertificateFile = new File(arguments.get("usercert"));
 
         // If we are sent the name of the file
-        String userCertificatePath = "./" + arguments.get("usercert");
+        String userCertificatePath = "." + File.separator + arguments.get("usercert");
 
         File userCertificateFile = new File(userCertificatePath);
         InputStream userCertificateInputStream = new FileInputStream(userCertificateFile);
@@ -88,19 +88,22 @@ public class ForwardClient
         }
 
         byte[] serverCertificateByte = Base64.getDecoder().decode(certificate);
-        String serverCertificatePath = "./current-connection-server.pem";
+        /*String serverCertificatePath = "./current-connection-server.pem";
         File serverCertificateFile = new File(serverCertificatePath);
         FileOutputStream serverFileOutputStream = new FileOutputStream(serverCertificateFile);
         serverFileOutputStream.write(serverCertificateByte);
         serverFileOutputStream.flush();
-        serverFileOutputStream.close();
+        serverFileOutputStream.close();*/
 
-        String caCertificatePath = "./" + arguments.get("cacert");
+        String caCertificatePath = "." + File.separator + arguments.get("cacert");
         File caCertificateFile = new File(caCertificatePath);
 
-        String[] verifyCertificateInput = {caCertificatePath, serverCertificatePath};
+        InputStream clientCertificateInputStream = new ByteArrayInputStream(serverCertificateByte);
+        InputStream caCertificateInputStream = new FileInputStream(caCertificateFile);
 
-        VerifyCertificate.main(verifyCertificateInput);
+        /*String[] verifyCertificateInput = {caCertificatePath, serverCertificatePath};*/
+
+        VerifyCertificate.verifyCertificate(caCertificateInputStream, clientCertificateInputStream);
     }
 
 
@@ -133,7 +136,7 @@ public class ForwardClient
         byte[] decodedSessionKey = Base64.getDecoder().decode(encodedSessionKey);
         byte[] decodedSessionIV = Base64.getDecoder().decode(encodedSessionIV);
 
-        String userPrivateKeyPath = "./" + arguments.getProperty("key");
+        String userPrivateKeyPath = "." + File.separator + arguments.getProperty("key");
         PrivateKey userPrivateKey = HandshakeCrypto.getPrivateKeyFromKeyFile(userPrivateKeyPath);
 
         byte[] decryptedSessionKey = HandshakeCrypto.decrypt(decodedSessionKey, userPrivateKey);
