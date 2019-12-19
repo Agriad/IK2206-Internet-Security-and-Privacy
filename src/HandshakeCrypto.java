@@ -52,6 +52,15 @@ public class HandshakeCrypto{
         return publicKey;
     }
 
+    public static PublicKey getPublicKeyFromCertFile(InputStream certfile) throws IOException, CertificateException
+    {
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(certfile);
+        PublicKey publicKey = certificate.getPublicKey();
+
+        return publicKey;
+    }
+
     public static PrivateKey getPrivateKeyFromKeyFile(String keyfile) throws IOException, NoSuchAlgorithmException,
             InvalidKeySpecException
     {
