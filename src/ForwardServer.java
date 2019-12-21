@@ -45,10 +45,6 @@ public class ForwardServer
     private String targetHost;
     private int targetPort;
 
-    private static final String clientCertificatePath = "./current-connection-client.pem";
-    /*private byte[] sessionKey;
-    private byte[] sessionIV;*/
-
     // validate the client certificate
     private byte[] clientCheck(HandshakeMessage clientHello, Socket socket) throws IOException {
         clientHello.recv(socket);
@@ -61,24 +57,12 @@ public class ForwardServer
         }
 
         byte[] clientCertificateByte = Base64.getDecoder().decode(certificate);
-        /*File clientCertificateFile = new File(clientCertificatePath);
-        FileOutputStream clientFileOutputStream = new FileOutputStream(clientCertificateFile);
-        clientFileOutputStream.write(clientCertificateByte);
-        clientFileOutputStream.flush();
-        clientFileOutputStream.close();
-        */
-
-        String caCertificatePath = "." + File.separator + arguments.get("cacert");
-        File caCertificateFile = new File(caCertificatePath);
-
-        /*
-        String[] verifyCertificateInput = {caCertificatePath, clientCertificatePath};*/
+        File caCertificateFile = new File(arguments.get("cacert"));
 
         InputStream clientCertificateInputStream = new ByteArrayInputStream(clientCertificateByte);
         InputStream caCertificateInputStream = new FileInputStream(caCertificateFile);
 
         try {
-            //VerifyCertificate.main(verifyCertificateInput);
             VerifyCertificate.verifyCertificate(caCertificateInputStream, clientCertificateInputStream);
         }
         catch (CertificateException certificateException)
@@ -91,11 +75,10 @@ public class ForwardServer
 
     private void serverHello(HandshakeMessage serverHello, Socket socket) throws IOException {
         serverHello.putParameter("MessageType", "ServerHello");
-        String userCertificatePath = "." + File.separator + arguments.get("usercert");
 
-        File userCertificateFile = new File(userCertificatePath);
+        File userCertificateFile = new File(arguments.get("usercert"));
         InputStream userCertificateInputStream = new FileInputStream(userCertificateFile);
-        // String userCertificateString = new String(userCertificateInputStream.readAllBytes());
+
         byte[] userCertificateByte = Base64.getEncoder().encode(userCertificateInputStream.readAllBytes());
         String userCertificateString = new String(userCertificateByte);
 
@@ -121,6 +104,7 @@ public class ForwardServer
         targetPort = portNumberInt;
     }
 
+    // Sends the key, iv, host, and port for the session to the client
     private byte[][] sessionMessage(HandshakeMessage session, Socket socket, int sessionPort, byte[] clientCertByte)
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidAlgorithmParameterException, IOException, CertificateException, BadPaddingException,
@@ -128,12 +112,10 @@ public class ForwardServer
         session.putParameter("MessageType", "Session");
 
         SessionEncrypter sessionEncrypter = new SessionEncrypter(128);
-        /*sessionKey = sessionEncrypter.getKeyBytes();
-        sessionIV = sessionEncrypter.getIVBytes();*/
+
         byte[] sessionKey = sessionEncrypter.getKeyBytes();
         byte[] sessionIV = sessionEncrypter.getIVBytes();
 
-        //PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientCertificatePath);
         InputStream clientCertInputStream = new ByteArrayInputStream(clientCertByte);
         PublicKey clientPublicKey = HandshakeCrypto.getPublicKeyFromCertFile(clientCertInputStream);
 
@@ -149,7 +131,6 @@ public class ForwardServer
         session.putParameter("SessionKey", finalSessionKey);
         session.putParameter("SessionIV", finalSessionIV);
         session.putParameter("SessionHost", Handshake.serverHost);
-        //session.putParameter("SessionPort", String.valueOf(Handshake.serverPort));
         session.putParameter("SessionPort", String.valueOf(sessionPort));
 
         session.send(socket);

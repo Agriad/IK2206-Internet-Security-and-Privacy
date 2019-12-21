@@ -50,23 +50,14 @@ public class ForwardClient
     private static byte[] sessionKey;
     private static byte[] sessionIV;
 
-
     // Creates a HandshakeMessage and returns it filled
     private static HandshakeMessage clientServerHello() throws IOException {
         HandshakeMessage clientHello = new HandshakeMessage();
         clientHello.putParameter("MessageType", "ClientHello");
-        // This works if file already is encoded to string
-        // clientHello.putParameter("Certificate", arguments.get("usercert"));
 
-        // If we are sent a file
-        // File userCertificateFile = new File(arguments.get("usercert"));
-
-        // If we are sent the name of the file
-        String userCertificatePath = "." + File.separator + arguments.get("usercert");
-
-        File userCertificateFile = new File(userCertificatePath);
+        File userCertificateFile = new File(arguments.get("usercert"));
         InputStream userCertificateInputStream = new FileInputStream(userCertificateFile);
-        // String userCertificateString = new String(userCertificateInputStream.readAllBytes());
+
         byte[] userCertificateByte = Base64.getEncoder().encode(userCertificateInputStream.readAllBytes());
         String userCertificateString = new String(userCertificateByte);
 
@@ -88,25 +79,13 @@ public class ForwardClient
         }
 
         byte[] serverCertificateByte = Base64.getDecoder().decode(certificate);
-        /*String serverCertificatePath = "./current-connection-server.pem";
-        File serverCertificateFile = new File(serverCertificatePath);
-        FileOutputStream serverFileOutputStream = new FileOutputStream(serverCertificateFile);
-        serverFileOutputStream.write(serverCertificateByte);
-        serverFileOutputStream.flush();
-        serverFileOutputStream.close();*/
-
-        String caCertificatePath = "." + File.separator + arguments.get("cacert");
-        File caCertificateFile = new File(caCertificatePath);
+        File caCertificateFile = new File(arguments.get("cacert"));
 
         InputStream clientCertificateInputStream = new ByteArrayInputStream(serverCertificateByte);
         InputStream caCertificateInputStream = new FileInputStream(caCertificateFile);
 
-        /*String[] verifyCertificateInput = {caCertificatePath, serverCertificatePath};*/
-
         VerifyCertificate.verifyCertificate(caCertificateInputStream, clientCertificateInputStream);
     }
-
-
 
     // Adds the key value pair for forward message
     private static void forwardMessage(HandshakeMessage forwardMessage, Socket socket) throws IOException {
@@ -117,6 +96,7 @@ public class ForwardClient
         forwardMessage.send(socket);
     }
 
+    // Retrieve the key, iv, host, and port for the session from the server
     private static void sessionMessage(HandshakeMessage session, Socket socket) throws IOException,
             InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
             BadPaddingException, NoSuchPaddingException {
@@ -136,8 +116,7 @@ public class ForwardClient
         byte[] decodedSessionKey = Base64.getDecoder().decode(encodedSessionKey);
         byte[] decodedSessionIV = Base64.getDecoder().decode(encodedSessionIV);
 
-        String userPrivateKeyPath = "." + File.separator + arguments.getProperty("key");
-        PrivateKey userPrivateKey = HandshakeCrypto.getPrivateKeyFromKeyFile(userPrivateKeyPath);
+        PrivateKey userPrivateKey = HandshakeCrypto.getPrivateKeyFromKeyFile(arguments.getProperty("key"));
 
         byte[] decryptedSessionKey = HandshakeCrypto.decrypt(decodedSessionKey, userPrivateKey);
         byte[] decryptedSessionIV = HandshakeCrypto.decrypt(decodedSessionIV, userPrivateKey);
